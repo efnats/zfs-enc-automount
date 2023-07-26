@@ -1,14 +1,34 @@
 #!/usr/bin/env bash
 
-provider_host=$(cat /usr/local/bin/ProxmoxAutoZFS/provider_hosts.conf)
-enc_datasets=$(zfs get -r -H -o name,value keyformat | grep passphrase | awk '{print $1}' | awk '!/vm-/' | awk '!/base/' | xargs)
+# Read hosts from the configuration file
+readarray -t provider_hosts < /usr/local/bin/zfs-enc-automount/provider_hosts.conf
+
+# Get encrypted datasets
+enc_datasets=$(zfs get -r -H -o name,value keyformat | grep passphrase | awk '{print $1}' | awk '!/vm-/' | awk '!/base/')
 
 # Password file location
 passwd_file="/run/zfs_passwords"
 
-# Fetch the passwords from the remote server
-passwords=$(ssh root@$provider_host cat $passwd_file)
-password_array=($passwords)  # Convert the string to array
+# Iterate over provider hosts until passwords are successfully fetched
+for provider_host in "${provider_hosts[@]}"; do
+  echo "Attempting to fetch passwords from $provider_host..."
+  passwords=$(ssh root@$provider_host cat $passwd_file 2>/dev/null)
+  if [[ -n "$passwords" ]]; then
+    echo "Passwords fetched from $provider_host"
+    break
+  else
+    echo "Unable to fetch passwords from $provider_host"
+  fi
+done
+
+# Exit if no passwords fetched
+if [[ -z "$passwords" ]]; then
+  echo "Could not fetch passwords from any provider host. Exiting."
+  exit 1
+fi
+
+# Convert the passwords string to an array
+password_array=($passwords)
 
 for ds in $enc_datasets; do
   # Check if the dataset is already mounted
