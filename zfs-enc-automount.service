@@ -1,0 +1,16 @@
+[Unit]
+Description=Automount Encrypted Dataset
+After=network-online.target
+
+# include all services here which must wait for the mount
+Before=pve-guests.service nfs-server.service
+
+[Service]
+Type=simple
+ExecStartPre=/bin/bash -c "while ! ssh root@$(cat /usr/local/bin/zfs-enc-automount/provider_hosts.conf) true; do sleep 0.5; done"
+ExecStartPre=/bin/bash /usr/local/bin/zfs-enc-automount/automount.sh
+ExecStart=/bin/true
+
+[Install]
+RequiredBy=pve-guests
+WantedBy=multi-user.target

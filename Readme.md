@@ -11,18 +11,15 @@ When the main host boots, the password is retrieved via ssh from the provider ho
 #### 1. Setup the raspberry pi
 - Flash a fresh raspbian onto a sd card. I recommend using raspbian lite (without desktop) to limit the attack surface.
 - Enable ssh on the rpi, disable password authentication and add your main host's public key to /root/.ssh/authorized_hosts
-- I recommend giving the rpi a static ip address. In my example the rpi has the address '10.99.99.2'.
+- for added security disable the monitor output: by adding the line 'hdmi_blanking=2' to /boot/config.txt
+- I recommend giving the rpi a static ip address either via network configuration or by binding the mac address on your routers config
 
 #### 2. Setup the main host
-- Clone this project to some location on the host.
-- Copy the automount.service to /etc/system/systemd/
-- Edit the just created service file and:
-    - replace the '/root/automount.sh' path to match the location of your automount.sh
-    - edit the ip address to match your rpi's address
-- Edit both `automount.sh` and `provide_password.sh` to use the correct ip address of your reaspberry pi.
-- Edit `automount.sh` to contain the correct zfs paths of your encrypted datasets.
-- Enable the automount service by executing `systemctl enable automount && systemctl start automount`.
-- Manually execute `./provide_password.sh` and type in your encryption password. It will be pushed to the memory of the rpi via ssh.'
+- Clone this project to /usr/local/bin/ 
+- Copy the autozfs.service to /etc/system/systemd/
+- Edit the provider_hosts.conf to match your rpi's ip address
+- Enable the automount service by executing `systemctl daemon-reload && systemctl enable autozfs`.
+- Manually execute `./provide_password.sh` and type in your encryption passwords. It will be pushed to the memory of the rpi via ssh.'
 
-Currently the automount.service is only tested on proxmox pve version 6. To make it work on other operating systems, slight modifications might be necessary.
+Currently the autozfs.service is only tested on proxmox pve version 6,7 and 8. To make it work on other operating systems, slight modifications might be necessary.
 Make sure to modify the 'Before=' field to include all services which must wait for the encrypted datasets to be mounted before they start.
