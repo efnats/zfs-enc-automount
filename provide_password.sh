@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # Read hosts from the configuration file
-readarray -t provider_hosts < /usr/local/bin/zfs-enc-automount.dev/provider_hosts.conf
+readarray -t provider_hosts < /usr/local/bin/zfs-enc-automount/provider_hosts.conf
 
 passwd_file="/run/zfs_passwords"
 available_hosts=()
