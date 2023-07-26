@@ -17,7 +17,7 @@ When the main host boots, the password is retrieved via ssh from the provider ho
 #### 2. Setup the main host
 - Clone this project to /usr/local/bin/ 
 - Copy the zfs-enc-automount.service to /etc/system/systemd/
-- Edit the provider_hosts.conf to match your rpi's ip address
+- Edit provider_hosts.conf to match your rpi address. For multiple entries enter one per line.
 - Enable the automount service by executing `systemctl daemon-reload && systemctl enable zfs-enc-automount`.
 - Manually execute `./provide_password.sh` and type in your encryption passwords. It will be pushed to the memory of the rpi via ssh.'
 
