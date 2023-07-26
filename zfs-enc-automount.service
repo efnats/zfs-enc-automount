@@ -7,7 +7,8 @@ Before=pve-guests.service nfs-server.service
 
 [Service]
 Type=simple
-ExecStartPre=/bin/bash -c "while ! ssh root@$(cat /usr/local/bin/zfs-enc-automount/provider_hosts.conf) true; do sleep 0.5; done"
+#ExecStartPre=/bin/bash -c "while ! ssh root@$(cat /usr/local/bin/zfs-enc-automount/provider_hosts.conf) true; do sleep 0.5; done"
+ExecStartPre=/bin/bash -c 'for host in $(cat /usr/local/bin/zfs-enc-automount/provider_hosts.conf); do while ! ssh root@$host true; do sleep 0.5; done; break; done'
 ExecStartPre=/bin/bash /usr/local/bin/zfs-enc-automount/automount.sh
 ExecStart=/bin/true
 
