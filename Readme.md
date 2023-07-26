@@ -16,10 +16,10 @@ When the main host boots, the password is retrieved via ssh from the provider ho
 
 #### 2. Setup the main host
 - Clone this project to /usr/local/bin/ 
-- Copy the autozfs.service to /etc/system/systemd/
+- Copy the zfs-enc-automount.service to /etc/system/systemd/
 - Edit the provider_hosts.conf to match your rpi's ip address
-- Enable the automount service by executing `systemctl daemon-reload && systemctl enable autozfs`.
+- Enable the automount service by executing `systemctl daemon-reload && systemctl enable zfs-enc-automount`.
 - Manually execute `./provide_password.sh` and type in your encryption passwords. It will be pushed to the memory of the rpi via ssh.'
 
-Currently the autozfs.service is only tested on proxmox pve version 6,7 and 8. To make it work on other operating systems, slight modifications might be necessary.
+Currently the zfs-enc-automount.service is tested on proxmox pve version 6,7 and 8. To make it work on other operating systems, slight modifications might be necessary.
 Make sure to modify the 'Before=' field to include all services which must wait for the encrypted datasets to be mounted before they start.
