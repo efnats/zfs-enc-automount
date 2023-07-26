@@ -23,3 +23,6 @@ When the main host boots, the password is retrieved via ssh from the provider ho
 
 Currently the zfs-enc-automount.service is tested on proxmox pve version 6,7 and 8. To make it work on other operating systems, slight modifications might be necessary.
 Make sure to modify the 'Before=' field to include all services which must wait for the encrypted datasets to be mounted before they start.
+
+#### 3. Todo
+- implementation of 'shamir secret sharing' to move away from a 'security by obscurity' concept
