@@ -18,10 +18,10 @@ fi
 
 readarray -t provider_hosts < "${CONFIG_DIR}/provider_hosts.conf"
 
-# Get encrypted datasets (excluding VM disks, LXC volumes, and base images)
+# Get encrypted datasets (excluding snapshots, VM disks, LXC volumes, and base images)
 get_encrypted_datasets() {
     zfs get -r -H -o name,value keyformat | \
-        awk '$2 == "passphrase" && !/(vm|subvol)-[0-9]+-disk-/ && !/\/base-[0-9]+/ {print $1}'
+        awk '$2 == "passphrase" && !/@/ && !/(vm|subvol)-[0-9]+-disk-/ && !/\/base-[0-9]+/ {print $1}'
 }
 
 # Fetch passwords from all reachable provider hosts
