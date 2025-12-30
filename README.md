@@ -155,7 +155,7 @@ Standalone encryption roots like `pool/vmdisks` are correctly included.
 
 ## Tested On
 
-- **Proxmox VE 6, 7, and 8**
+- **Proxmox VE 6, 7, 8, and 9**
 - Raspberry Pi OS Lite (provider host)
 - Debian 11/12 (provider host)
 
