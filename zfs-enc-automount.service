@@ -1,17 +1,37 @@
 [Unit]
-Description=Automount Encrypted Dataset
-After=network-online.target
+Description=Automount Encrypted ZFS Datasets
+After=network-online.target zfs-import.target
+Wants=network-online.target
 
-# include all services here which must wait for the mount
+# Include all services here which must wait for the encrypted datasets to be mounted
 Before=pve-guests.service nfs-server.service
 
 [Service]
-Type=simple
-#ExecStartPre=/bin/bash -c "while ! ssh root@$(cat /usr/local/bin/zfs-enc-automount/provider_hosts.conf) true; do sleep 0.5; done"
-ExecStartPre=/bin/bash -c 'for host in $(cat /usr/local/bin/zfs-enc-automount/provider_hosts.conf); do while ! ssh root@$host true; do sleep 0.5; done; break; done'
-ExecStartPre=/bin/bash /usr/local/bin/zfs-enc-automount/automount.sh
-ExecStart=/bin/true
+Type=oneshot
+RemainAfterExit=yes
+
+# Timeout for the entire service (5 minutes)
+TimeoutStartSec=300
+
+# Wait for at least one provider host to become reachable (max 2 minutes)
+ExecStartPre=/bin/bash -c '\
+    TIMEOUT=120; \
+    ELAPSED=0; \
+    while [[ $ELAPSED -lt $TIMEOUT ]]; do \
+        for host in $(grep -v "^#" /opt/zfs-enc-automount/provider_hosts.conf); do \
+            if ssh -o ConnectTimeout=5 -o BatchMode=yes root@$host true 2>/dev/null; then \
+                exit 0; \
+            fi; \
+        done; \
+        sleep 2; \
+        ELAPSED=$((ELAPSED + 2)); \
+    done; \
+    echo "No provider host reachable within timeout"; \
+    exit 1'
+
+# Run the automount script
+ExecStart=/bin/bash /opt/zfs-enc-automount/automount.sh
 
 [Install]
-RequiredBy=pve-guests
+RequiredBy=pve-guests.service
 WantedBy=multi-user.target
