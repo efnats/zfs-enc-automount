@@ -121,10 +121,30 @@ done <<< "$enc_datasets"
 echo ""
 echo "Mounting all datasets..."
 
-if zfs mount -a; then
+# `zfs mount -a` exits non-zero if ANY dataset is already mounted or its
+# mountpoint is busy. Both are benign when datasets were already mounted at
+# pool-import time, but that non-zero exit used to fail this whole service and
+# block ordered units (e.g. pve-guests.service). Only treat genuine mount
+# failures as fatal.
+mount_rc=0
+mount_output="$(zfs mount -a 2>&1)" || mount_rc=$?
+[[ -n "$mount_output" ]] && echo "$mount_output"
+
+if [[ $mount_rc -eq 0 ]]; then
     echo "=== All datasets mounted successfully ==="
     exit 0
-else
-    echo "=== Warning: Some datasets may have failed to mount ==="
-    exit 1
 fi
+
+# Anything that is not a benign "already mounted" / "busy" notice is a real error.
+real_errors="$(printf '%s\n' "$mount_output" \
+    | grep -iE 'cannot mount|error' \
+    | grep -viE 'already mounted|mountpoint or dataset is busy' || true)"
+
+if [[ -z "$real_errors" ]]; then
+    echo "=== All datasets mounted (benign 'already mounted'/'busy' notices ignored) ==="
+    exit 0
+fi
+
+echo "=== ERROR: Some datasets failed to mount ===" >&2
+printf '%s\n' "$real_errors" >&2
+exit 1
